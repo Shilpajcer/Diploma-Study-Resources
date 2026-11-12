@@ -1,0 +1,50 @@
+:root {
+  /* Brand colours */
+  --dsh-navy: #172344;
+  --dsh-navy-900: #0f1830;
+  --dsh-navy-700: #1f2f5c;
+  --dsh-teal: #4B91A0;
+  --dsh-teal-600: #3d7a88;   /* use for text/buttons on white */
+  --dsh-teal-100: #e3f0f3;
+
+  /* Surfaces & text */
+  --dsh-bg: #F5F7FA;
+  --dsh-card: #FFFFFF;
+  --dsh-text: #252B36;
+  --dsh-muted: #5f6878;
+  --dsh-border: #e4e8ef;
+
+  /* Status */
+  --dsh-success: #2e9e6b;
+  --dsh-success-bg: #e2f3ea;
+  --dsh-warning: #e8a317;
+  --dsh-warning-bg: #fdf0d5;
+
+  /* Shape */
+  --dsh-radius-sm: 8px;
+  --dsh-radius: 14px;
+  --dsh-radius-lg: 22px;
+
+  /* Shadows */
+  --dsh-shadow-sm: 0 1px 2px rgba(23, 35, 68, .06);
+  --dsh-shadow: 0 6px 20px rgba(23, 35, 68, .08);
+  --dsh-shadow-lg: 0 14px 40px rgba(15, 24, 48, .25);
+
+  /* Type */
+  --dsh-font-heading: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --dsh-font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Spacing */
+  --dsh-section-y: 4rem;
+}
+
+/* Resource category colours. Set data-category="..." on any element. */
+[data-category] { --cat: #2f6573; --cat-bg: #e3f0f3; }
+[data-category="notes"]               { --cat: #2f6573; --cat-bg: #e3f0f3; }
+[data-category="question-paper"]      { --cat: #172344; --cat-bg: #e6e9f2; }
+[data-category="model-paper"]         { --cat: #4c3c9e; --cat-bg: #ece9f9; }
+[data-category="solved-paper"]        { --cat: #1d6e4c; --cat-bg: #e2f3ea; }
+[data-category="lab-manual"]          { --cat: #8a5508; --cat-bg: #fdf0d5; }
+[data-category="important-questions"] { --cat: #9c2f4d; --cat-bg: #fbe7ed; }
+[data-category="syllabus"]            { --cat: #35506b; --cat-bg: #e5edf5; }
+[data-category="viva-questions"]      { --cat: #6b4a14; --cat-bg: #f5ecda; }

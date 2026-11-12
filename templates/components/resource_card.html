@@ -1,0 +1,21 @@
+{% url 'materials' as materials_url %}
+<article class="resource-card" data-category="{{ r.category_slug }}">
+  <div class="resource-card__top">
+    <span class="cat-badge"><i class="bi {{ r.icon }}"></i> {{ r.category }}</span>
+    {% include "components/status_badge.html" with status=r.status %}
+  </div>
+  <h3 class="resource-card__title">
+    <a href="{{ materials_url }}" class="stretched-link">{{ r.title }}</a>
+  </h3>
+  <p class="resource-card__subject">{{ r.subject }} · <span class="resource-card__code">{{ r.code }}</span></p>
+  <ul class="resource-card__meta">
+    <li>{{ r.scheme }}</li>
+    <li>{{ r.branch_short }}</li>
+    <li>Sem {{ r.semester }}</li>
+    <li>{{ r.language }}</li>
+  </ul>
+  <div class="resource-card__foot">
+    <span><i class="bi bi-file-earmark-pdf"></i> {{ r.format }}</span>
+    <span>{{ r.uploaded }}</span>
+  </div>
+</article>

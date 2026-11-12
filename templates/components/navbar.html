@@ -1,0 +1,40 @@
+{% with current=request.resolver_match.url_name %}
+<header class="dsh-header sticky-top">
+  <nav class="navbar navbar-expand-lg dsh-navbar" aria-label="Main navigation">
+    <div class="container">
+      <a class="dsh-brand" href="{% url 'home' %}">
+        <span class="dsh-brand__mark"><i class="bi bi-mortarboard-fill"></i></span>
+        <span class="dsh-brand__text">
+          <strong>{{ SITE_NAME }}</strong>
+          <small>Karnataka · DTE</small>
+        </span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false"
+              aria-label="Toggle navigation">
+        <i class="bi bi-list fs-2"></i>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav mx-lg-auto gap-lg-1">
+          <li class="nav-item"><a class="nav-link {% if current == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a></li>
+          <li class="nav-item"><a class="nav-link {% if current == 'materials' %}active{% endif %}" href="{% url 'materials' %}">Study Materials</a></li>
+          <li class="nav-item"><a class="nav-link {% if current == 'question_papers' %}active{% endif %}" href="{% url 'question_papers' %}">Question Papers</a></li>
+          <li class="nav-item"><a class="nav-link {% if current == 'syllabus' %}active{% endif %}" href="{% url 'syllabus' %}">Syllabus</a></li>
+          <li class="nav-item"><a class="nav-link {% if current == 'dte_updates' %}active{% endif %}" href="{% url 'dte_updates' %}">DTE Updates</a></li>
+          <li class="nav-item"><a class="nav-link {% if current == 'about' %}active{% endif %}" href="{% url 'about' %}">About Us</a></li>
+          <li class="nav-item"><a class="nav-link {% if current == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact Us</a></li>
+        </ul>
+
+        {% if FEATURES.student_accounts %}
+        <div class="d-flex gap-2 mt-3 mt-lg-0">
+          <a class="btn btn-dsh-outline btn-sm" href="{% url 'login' %}">Login</a>
+          <a class="btn btn-dsh-primary btn-sm" href="{% url 'register' %}">Register</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+</header>
+{% endwith %}

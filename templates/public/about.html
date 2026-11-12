@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Us – {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}Learn about {{ SITE_NAME }}, our mission and vision to provide Karnataka DTE diploma students with accessible and organised learning resources.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/pages.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- ===== HERO ===== -->
+<section class="page-hero">
+  <div class="container">
+    <span class="page-hero__eyebrow"><i class="bi bi-mortarboard-fill" aria-hidden="true"></i> Built for Karnataka Diploma Students</span>
+    <h1 class="page-hero__title">About Diploma Study Hub</h1>
+    <p class="page-hero__lead">
+      Empowering Karnataka Diploma Students with Accessible and Organised Learning Resources.
+    </p>
+    <p class="page-hero__intro">
+      Diploma Study Hub is an educational platform created to bring Karnataka DTE diploma notes,
+      previous year question papers, lab manuals, syllabus copies, and exam preparation materials
+      together in one structured, easy-to-browse place.
+    </p>
+  </div>
+</section>
+
+<!-- ===== MISSION & VISION ===== -->
+<section class="section section--white">
+  <div class="container">
+    {% include "components/section_header.html" with title="Our mission & vision" subtitle="Why Diploma Study Hub exists and where we are heading." %}
+    <div class="row g-4">
+      <div class="col-md-6">
+        <article class="dsh-mv-card">
+          <div class="dsh-info-card__icon" aria-hidden="true">
+            <i class="bi bi-bullseye"></i>
+          </div>
+          <h3 class="h4 fw-bold mb-2">Our Mission</h3>
+          <p class="mb-0 text-body-secondary lh-base">
+            Our mission is to make diploma education resources easily accessible to every Karnataka
+            diploma student. By organising materials clearly by scheme, branch, semester, and subject,
+            we aim to simplify exam preparation and reduce the time students spend searching across
+            scattered links and groups.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6">
+        <article class="dsh-mv-card dsh-mv-card--navy">
+          <div class="dsh-info-card__icon dsh-info-card__icon--navy" aria-hidden="true">
+            <i class="bi bi-eye"></i>
+          </div>
+          <h3 class="h4 fw-bold mb-2">Our Vision</h3>
+          <p class="mb-0 text-body-secondary lh-base">
+            Our vision is to build a trusted, centralised educational platform for Karnataka diploma
+            students where they can find academic resources easily—from semester-one fundamentals to
+            final-year subjects—in a clean, reliable, student-first environment.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHAT WE PROVIDE ===== -->
+<section class="section">
+  <div class="container">
+    {% include "components/section_header.html" with title="What we provide" subtitle="Core study material categories structured for Karnataka diploma coursework." %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+      {% for item in what_we_provide %}
+      <div class="col">
+        <article class="dsh-info-card">
+          <div class="dsh-info-card__icon" aria-hidden="true">
+            <i class="bi {{ item.icon }}"></i>
+          </div>
+          <h3 class="dsh-info-card__title">{{ item.title }}</h3>
+          <p class="dsh-info-card__text">{{ item.description }}</p>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHO CAN USE & SUPPORTED SCHEMES ===== -->
+<section class="section section--white">
+  <div class="container">
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-5">
+        <article class="dsh-info-card">
+          <div class="dsh-info-card__icon dsh-info-card__icon--navy" aria-hidden="true">
+            <i class="bi bi-people"></i>
+          </div>
+          <h2 class="h4 fw-bold mb-2">Who Can Use Our Platform?</h2>
+          <p class="text-body-secondary mb-3 lh-base">
+            Diploma Study Hub is intended for Karnataka Diploma students across different engineering
+            branches and semesters (Semesters 1 through 6).
+          </p>
+          <p class="text-body-secondary mb-0 lh-base">
+            Whether you are preparing for internal assessments, laboratory practicals, or semester-end
+            DTE examinations, you can browse available subjects and download verified materials without
+            creating an account.
+          </p>
+        </article>
+      </div>
+
+      <div class="col-lg-7">
+        <h2 class="h4 fw-bold mb-2">Supported Schemes</h2>
+        <p class="text-muted mb-3">
+          The platform is structured around Karnataka DTE diploma schemes. Study materials and branch
+          coverage are being added progressively—not every scheme or branch has complete resources yet.
+        </p>
+        <div class="row row-cols-1 row-cols-md-3 g-3">
+          {% for scheme in schemes %}
+          <div class="col">
+            <article class="dsh-scheme-card">
+              <span class="dsh-scheme-badge">
+                <i class="bi bi-bookmark-check" aria-hidden="true"></i>
+                {{ scheme.name }}
+              </span>
+              <p class="small text-muted mb-0 lh-base">{{ scheme.note }}</p>
+            </article>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY CHOOSE US ===== -->
+<section class="section">
+  <div class="container">
+    {% include "components/section_header.html" with title="Why choose us?" subtitle="Designed around how diploma students actually revise and prepare." %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+      {% for point in why_choose_us %}
+      <div class="col">
+        <article class="dsh-info-card">
+          <div class="dsh-info-card__icon" aria-hidden="true">
+            <i class="bi {{ point.icon }}"></i>
+          </div>
+          <h3 class="dsh-info-card__title">{{ point.title }}</h3>
+          <p class="dsh-info-card__text">{{ point.description }}</p>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== OUR TEAM ===== -->
+<section class="section section--white">
+  <div class="container">
+    {% include "components/section_header.html" with title="Our team" subtitle="The developers building and maintaining Diploma Study Hub." %}
+    <div class="row g-4">
+      {% for member in team_members %}
+      <div class="col-md-6">
+        <article class="dsh-team-card">
+          <div class="dsh-team-card__avatar" aria-hidden="true">
+            <i class="bi {{ member.icon }}"></i>
+          </div>
+          <div>
+            <h3 class="h5 fw-bold mb-1">{{ member.role }}</h3>
+            <p class="text-muted mb-0 lh-base">{{ member.summary }}</p>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="section">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2>Start Your Learning Journey Today!</h2>
+        <p>Select your scheme, branch, and semester to explore the study materials currently available.</p>
+      </div>
+      <a href="{% url 'materials' %}" class="btn btn-dsh-light">
+        Explore Study Materials <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

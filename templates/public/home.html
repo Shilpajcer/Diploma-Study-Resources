@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/home.css' %}">{% endblock %}
+
+{% block content %}
+{% url 'materials' as materials_url %}
+{% url 'question_papers' as qp_url %}
+{% url 'exam_prep' as prep_url %}
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <span class="hero__eyebrow"><i class="bi bi-patch-check-fill"></i> Free for every Karnataka diploma student</span>
+        <h1 class="hero__title">Your Complete <span>Karnataka Diploma</span> Study Hub</h1>
+        <p class="hero__lead">Discover notes, previous question papers, lab manuals and examination resources, all in one place.</p>
+
+        <form class="search-bar" action="{% url 'search' %}" method="get" role="search">
+          <i class="bi bi-search search-bar__icon" aria-hidden="true"></i>
+          <label for="heroSearch" class="visually-hidden">Search subjects and resources</label>
+          <input id="heroSearch" name="q" type="search" class="search-bar__input"
+                 placeholder="Subject name or code"
+                 autocomplete="off" data-search-focus>
+          <button class="btn btn-dsh-primary search-bar__btn" type="submit">Search</button>
+        </form>
+        <p class="search-hint">Tip: you can also search by branch or semester, e.g. “CSE sem 4”.</p>
+
+        <div class="hero__chips">
+          <span>Scheme:</span>
+          {% for s in schemes %}
+            <a href="{{ materials_url }}?scheme={{ s.slug }}">{{ s.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="quick-panel">
+          <p class="quick-panel__title">Quick access</p>
+          <div class="row g-2">
+            {% for c in categories %}
+            <div class="col-6">
+              <a class="quick-tile" data-category="{{ c.slug }}" href="{{ materials_url }}?type={{ c.slug }}">
+                <span class="quick-tile__icon"><i class="bi {{ c.icon }}"></i></span>
+                <span class="quick-tile__text"><strong>{{ c.name }}</strong><small>{{ c.blurb }}</small></span>
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== POPULAR BRANCHES ===== -->
+<section class="section">
+  <div class="container">
+    {% include "components/section_header.html" with title="Popular branches" subtitle="Pick your branch to see subjects and resources." link_url=materials_url link_text="All branches" %}
+    <div class="row row-cols-2 row-cols-md-4 g-3">
+      {% for b in branches %}
+        <div class="col">{% include "components/branch_card.html" %}</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== BROWSE BY SEMESTER ===== -->
+<section class="section section--white">
+  <div class="container">
+    {% include "components/section_header.html" with title="Browse by semester" subtitle="Jump straight to the semester you're studying." %}
+    <div class="row row-cols-3 row-cols-md-6 g-3">
+     {% for n in semesters %}
+<div class="col">
+  <a class="sem-card" href="{{ materials_url }}?semester={% firstof n.number n %}">
+    <span class="sem-card__num">{% firstof n.number n %}</span>
+    <span class="sem-card__label">Semester</span>
+  </a>
+</div>
+{% empty %}
+<p>No semesters available yet.</p>
+{% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== LATEST STUDY MATERIALS ===== -->
+<section class="section">
+  <div class="container">
+    {% include "components/section_header.html" with title="Latest study materials" subtitle="Freshly added notes and manuals." link_url=materials_url %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+      {% for r in latest_materials %}
+        <div class="col">{% include "components/resource_card.html" %}</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== PREVIOUS-YEAR QUESTION PAPERS ===== -->
+<section class="section section--white">
+  <div class="container">
+    {% include "components/section_header.html" with title="Previous-year question papers" subtitle="Practise with real exam papers." link_url=qp_url link_text="Open QP library" %}
+    <div class="qp-list">
+      {% for q in question_papers %}
+      <a class="qp-row" href="{{ qp_url }}">
+        <span class="qp-row__icon"><i class="bi bi-file-earmark-text"></i></span>
+        <span class="qp-row__main">
+          <strong>{{ q.subject }}</strong>
+          <small>{{ q.code }} · {{ q.scheme }} · {{ q.branch }} · Sem {{ q.semester }}<span class="d-sm-none"> · {{ q.exam }}</span></small>
+        </span>
+        <span class="qp-row__tag d-none d-sm-inline-block">{{ q.exam }}</span>
+        <span class="qp-row__lang d-none d-sm-inline">{{ q.language }}</span>
+        <i class="bi bi-chevron-right qp-row__go"></i>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== IMPORTANT QUESTIONS ===== -->
+<section class="section">
+  <div class="container">
+    {% include "components/section_header.html" with title="Important questions" subtitle="Focus your revision on what matters." link_url=materials_url|add:"?type=important-questions" %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+      {% for r in important_questions %}
+        <div class="col">{% include "components/resource_card.html" %}</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== RECENTLY UPLOADED ===== -->
+<section class="section section--white">
+  <div class="container">
+    {% include "components/section_header.html" with title="Recently uploaded" subtitle="The newest additions across all branches." %}
+    <ul class="recent-list">
+      {% for u in recent_uploads %}
+      <li>
+        <a href="{{ materials_url }}" class="recent-item">
+          <span class="recent-item__dot"></span>
+          <span class="recent-item__main">
+            <strong>{{ u.title }}</strong>
+            <small>{{ u.subject }} · {{ u.category }}</small>
+          </span>
+          <span class="recent-item__when">{{ u.when }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<!-- ===== EXAMINATION PREPARATION ===== -->
+<section class="section">
+  <div class="container">
+    {% include "components/section_header.html" with title="Examination preparation" subtitle="Everything for the last stretch before exams." link_url=prep_url link_text="Open prep zone" %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
+      {% for t in prep_tools %}
+      <div class="col">
+        <a class="prep-tile" href="{{ prep_url }}">
+          <span class="prep-tile__icon"><i class="bi {{ t.icon }}"></i></span>
+          <h3 class="prep-tile__title">{{ t.name }}</h3>
+          <p class="prep-tile__text">{{ t.blurb }}</p>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ===== V2 SECTIONS (hidden in V1 via feature flags) ===== -->
+{% if FEATURES.student_contributions %}
+<section class="section pt-0">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2>Got good notes? Share them.</h2>
+        <p>Upload notes or question papers. Our moderators verify everything before it goes public.</p>
+      </div>
+      <a href="{% url 'contribute' %}" class="btn btn-dsh-light">Contribute material</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if FEATURES.material_requests %}
+<section class="section pt-0">
+  <div class="container">
+    <div class="cta-band cta-band--teal">
+      <div>
+        <h2>Can't find what you need?</h2>
+        <p>Tell us which subject and material you're missing and we'll try to add it.</p>
+      </div>
+      <a href="{% url 'request_material' %}" class="btn btn-dsh-light">Request material</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

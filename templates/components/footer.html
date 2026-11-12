@@ -1,0 +1,40 @@
+<footer class="dsh-footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="dsh-brand dsh-brand--light mb-3">
+          <span class="dsh-brand__mark"><i class="bi bi-mortarboard-fill"></i></span>
+          <span class="dsh-brand__text"><strong>{{ SITE_NAME }}</strong><small>Karnataka · DTE</small></span>
+        </div>
+        <p class="dsh-footer__about">
+          A free, student-run platform that keeps Karnataka diploma notes, previous question papers
+          and lab manuals in one place.
+        </p>
+      </div>
+
+      <div class="col-6 col-lg-3">
+        <h2 class="dsh-footer__title">Explore</h2>
+        <ul class="list-unstyled dsh-footer__links">
+          <li><a href="{% url 'materials' %}">Study Materials</a></li>
+          <li><a href="{% url 'question_papers' %}">Question Papers</a></li>
+          <li><a href="{% url 'syllabus' %}">Syllabus</a></li>
+          <li><a href="{% url 'exam_prep' %}">Exam Preparation</a></li>
+          <li><a href="{% url 'dte_updates' %}">DTE Updates</a></li>
+        </ul>
+      </div>
+
+      <div class="col-6 col-lg-4">
+        <h2 class="dsh-footer__title">About</h2>
+        <ul class="list-unstyled dsh-footer__links">
+          <li><a href="{% url 'about' %}">About Us</a></li>
+          <li><a href="{% url 'contact' %}">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="dsh-footer__rule">
+    <div class="dsh-footer__bottom">
+      <p class="mb-0">© {% now "Y" %} {{ SITE_NAME }}. Unofficial student resource; not affiliated with the Department of Technical Education, Karnataka.</p>
+    </div>
+  </div>
+</footer>

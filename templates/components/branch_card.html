@@ -1,0 +1,14 @@
+{% url 'materials' as materials_url %}
+
+<a href="{{ materials_url }}?branch={{ b.slug }}" class="branch-card">
+  <span class="branch-card__icon">
+    <i class="bi {{ b.icon|default:'bi-book' }}"></i>
+  </span>
+
+  <span class="branch-card__name">{{ b.name }}</span>
+
+  <span class="branch-card__meta">
+    {% if b.scheme_branches %}{{ b.scheme_branches.first.semesters.count }}{% else %}6{% endif %} semesters
+    <i class="bi bi-arrow-right"></i>
+  </span>
+</a>

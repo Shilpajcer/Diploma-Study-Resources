@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="section">
+    <div class="container">
+
+        <h1 class="mb-2">Study Materials</h1>
+        <p class="text-muted mb-4">
+            Browse subjects according to your scheme, branch and semester.
+        </p>
+
+        <!-- STEP 1: SELECT SCHEME -->
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">1. Select Scheme</h4>
+
+            <div class="d-flex flex-wrap gap-2">
+                {% for scheme in schemes %}
+                    <a href="?scheme={{ scheme.slug }}"
+                       class="btn {% if selected_scheme == scheme %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        {{ scheme.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- STEP 2: SELECT BRANCH -->
+        {% if selected_scheme %}
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">2. Select Branch</h4>
+
+            <div class="row g-3">
+                {% for branch in branches %}
+                <div class="col-md-4">
+                    <a href="?scheme={{ selected_scheme.slug }}&branch={{ branch.slug }}"
+                       class="btn w-100 text-start {% if selected_branch == branch %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        {{ branch.name }}
+                    </a>
+                </div>
+                {% empty %}
+                    <p class="text-muted">No branches added under this scheme yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- BRANCH SELECTED WITHOUT SCHEME -->
+        {% if selected_branch and available_mappings %}
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">Select Scheme for {{ selected_branch.name }}</h4>
+
+            {% for mapping in available_mappings %}
+                <a href="?scheme={{ mapping.scheme.slug }}&branch={{ selected_branch.slug }}"
+                   class="btn btn-outline-primary me-2 mb-2">
+                    {{ mapping.scheme.name }}
+                </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- STEP 3: SELECT SEMESTER -->
+        {% if selected_scheme and selected_branch %}
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">3. Select Semester</h4>
+
+            <div class="row g-3">
+                {% for semester in semesters %}
+                <div class="col-6 col-md-2">
+                    <a href="?scheme={{ selected_scheme.slug }}&branch={{ selected_branch.slug }}&semester={{ semester.number }}"
+                       class="btn w-100 {% if selected_semester == semester %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        Semester {{ semester.number }}
+                    </a>
+                </div>
+                {% empty %}
+                    <p class="text-muted">No semesters added yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- STEP 4: DISPLAY SUBJECTS -->
+       {% if selected_semester %}
+
+<h2 class="mb-3">Subjects</h2>
+
+<div class="row g-3">
+
+    {% for subject in subjects %}
+
+    <div class="col-12">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <h6 class="mb-1">{{ subject.name }}</h6>
+                    <small class="text-muted">{{ subject.code }}</small>
+                </div>
+
+                <a href="{% url 'subject_detail' subject.id %}"
+                   class="btn btn-outline-primary btn-sm">
+                    View Materials →
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    {% empty %}
+
+    <p>No subjects available yet.</p>
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
+    </div>
+</section>
+
+{% endblock %}
