@@ -154,3 +154,4 @@ diploma-study-hub/
 ## 📄 License & Disclaimer
 
 This project is an independent educational student resource and is not officially affiliated with or endorsed by the Department of Technical Education (DTE), Karnataka. All trademarks and official curricula belong to their respective authorities.
+

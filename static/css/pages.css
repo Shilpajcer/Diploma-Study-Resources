@@ -475,3 +475,203 @@ input[type="file"].dsh-control {
   }
 }
 
+/* ---------- Question Papers Page ---------- */
+.qp-filter-card {
+  background: var(--dsh-card);
+  border: 1px solid var(--dsh-border);
+  border-radius: var(--dsh-radius);
+  padding: 1.5rem;
+  box-shadow: var(--dsh-shadow-sm);
+  margin-bottom: 2rem;
+}
+
+.qp-filter-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--dsh-navy);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.qp-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--dsh-card);
+  border: 1px solid var(--dsh-border);
+  border-radius: var(--dsh-radius);
+  padding: 1.35rem;
+  box-shadow: var(--dsh-shadow-sm);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.qp-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--dsh-shadow);
+  border-color: var(--dsh-teal);
+}
+
+.qp-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: .85rem;
+}
+
+.qp-badge-year {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #172344;
+  background: #e6e9f2;
+  padding: .25rem .65rem;
+  border-radius: 999px;
+}
+
+.qp-card__code {
+  display: inline-block;
+  font-family: var(--dsh-font-heading);
+  font-size: .82rem;
+  font-weight: 800;
+  color: var(--dsh-teal-600);
+  background: var(--dsh-teal-100);
+  padding: .2rem .6rem;
+  border-radius: var(--dsh-radius-sm);
+  margin-bottom: .45rem;
+}
+
+.qp-card__title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--dsh-navy);
+  line-height: 1.35;
+  margin-bottom: .35rem;
+}
+
+.qp-card__subtitle {
+  font-size: .88rem;
+  color: var(--dsh-muted);
+  line-height: 1.5;
+  margin-bottom: .9rem;
+}
+
+.qp-card__meta {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.15rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+
+.qp-card__meta li {
+  font-size: .78rem;
+  color: var(--dsh-text);
+  background: var(--dsh-bg);
+  border: 1px solid var(--dsh-border);
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.qp-card__foot {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--dsh-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.qp-card__actions {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+/* Empty State */
+.dsh-empty-state {
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  background: var(--dsh-card);
+  border: 1px dashed var(--dsh-border);
+  border-radius: var(--dsh-radius-lg);
+  margin: 1.5rem 0;
+}
+
+.dsh-empty-state__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  font-size: 2.2rem;
+  color: var(--dsh-teal-600);
+  background: var(--dsh-teal-100);
+  margin: 0 auto 1.25rem;
+}
+
+.dsh-empty-state__title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--dsh-navy);
+  margin-bottom: .5rem;
+}
+
+.dsh-empty-state__text {
+  color: var(--dsh-muted);
+  font-size: .95rem;
+  max-width: 32rem;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+
+/* Pagination */
+.dsh-pagination {
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.dsh-pagination .pagination {
+  gap: .35rem;
+}
+
+.dsh-pagination .page-link {
+  color: var(--dsh-navy);
+  background: var(--dsh-card);
+  border: 1px solid var(--dsh-border);
+  border-radius: var(--dsh-radius-sm);
+  padding: .5rem .9rem;
+  font-weight: 600;
+  font-size: .92rem;
+  transition: all .15s ease;
+}
+
+.dsh-pagination .page-link:hover {
+  background: var(--dsh-teal-100);
+  border-color: var(--dsh-teal);
+  color: var(--dsh-navy);
+}
+
+.dsh-pagination .page-item.active .page-link {
+  background: var(--dsh-navy);
+  border-color: var(--dsh-navy);
+  color: #fff;
+}
+
+.dsh-pagination .page-item.disabled .page-link {
+  opacity: .5;
+  background: var(--dsh-bg);
+  border-color: var(--dsh-border);
+}
+
+

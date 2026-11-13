@@ -5,6 +5,7 @@ import os
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import EmailMessage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -20,6 +21,7 @@ from .models import (
     Semester,
     Subject,
     ResourceCategory,
+    Resource,
     ContactSubmission,
 )
 
@@ -286,6 +288,168 @@ def subject_detail(request, subject_id):
     }
 
     return render(request, "public/subject_detail.html", context)
+
+
+QUESTION_PAPER_CATEGORY_SLUGS = [
+    "previous-question-papers",
+    "model-question-papers",
+    "solved-question-papers",
+    "question-paper",
+]
+
+
+def question_papers(request):
+    """
+    Question Papers Library view:
+    Filters verified question papers by search term, scheme, branch, semester, and examination year.
+    Only displays verified records with valid physical PDF files.
+    Supports pagination and preserves query filters across pages.
+    """
+    search_query = request.GET.get("q", "").strip()
+    selected_scheme = request.GET.get("scheme", "").strip()
+    selected_branch = request.GET.get("branch", "").strip()
+    selected_semester = request.GET.get("semester", "").strip()
+    selected_year = request.GET.get("year", "").strip()
+    selected_type = request.GET.get("type", "").strip()
+
+    papers = (
+        Resource.objects.filter(
+            category__slug__in=QUESTION_PAPER_CATEGORY_SLUGS,
+            status="verified",
+            is_active=True,
+        )
+        .exclude(file="")
+        .exclude(file__isnull=True)
+        .select_related(
+            "subject",
+            "subject__semester",
+            "subject__semester__scheme_branch",
+            "subject__semester__scheme_branch__scheme",
+            "subject__semester__scheme_branch__branch",
+            "category",
+        )
+    )
+
+    # 1. Search by subject name, subject code, or title
+    if search_query:
+        papers = papers.filter(
+            models.Q(subject__name__icontains=search_query)
+            | models.Q(subject__code__icontains=search_query)
+            | models.Q(title__icontains=search_query)
+            | models.Q(description__icontains=search_query)
+        )
+
+    # 2. Scheme filter
+    if selected_scheme:
+        papers = papers.filter(
+            subject__semester__scheme_branch__scheme__slug=selected_scheme
+        )
+
+    # 3. Branch filter
+    if selected_branch:
+        papers = papers.filter(
+            subject__semester__scheme_branch__branch__slug=selected_branch
+        )
+
+    # 4. Semester filter
+    if selected_semester and selected_semester.isdigit():
+        papers = papers.filter(
+            subject__semester__number=int(selected_semester)
+        )
+
+    # 5. Examination year filter
+    if selected_year and selected_year.isdigit():
+        papers = papers.filter(exam_year=int(selected_year))
+
+    # 6. Optional paper type (category) filter
+    if selected_type:
+        papers = papers.filter(category__slug=selected_type)
+
+    # Verify that files are valid PDFs and exist on disk
+    valid_ids = []
+    for p in papers:
+        if p.file and p.file.name.lower().endswith(".pdf"):
+            try:
+                if os.path.exists(p.file.path):
+                    valid_ids.append(p.id)
+            except Exception:
+                pass
+    papers = papers.filter(id__in=valid_ids)
+
+    # Sort: latest examination year first, then creation date, then code
+    papers = papers.order_by(
+        models.F("exam_year").desc(nulls_last=True),
+        "-created_at",
+        "subject__code",
+    )
+
+    # Distinct filters for dropdowns
+    schemes = Scheme.objects.filter(is_active=True).order_by("name")
+    branches = Branch.objects.all().order_by("name")
+    semesters = [1, 2, 3, 4, 5, 6]
+
+    available_years = list(
+        Resource.objects.filter(
+            category__slug__in=QUESTION_PAPER_CATEGORY_SLUGS,
+            status="verified",
+            is_active=True,
+            exam_year__isnull=False,
+        )
+        .values_list("exam_year", flat=True)
+        .distinct()
+        .order_by("-exam_year")
+    )
+    if not available_years:
+        available_years = [2025, 2024, 2023, 2022, 2021, 2020]
+
+    paper_types = ResourceCategory.objects.filter(
+        slug__in=QUESTION_PAPER_CATEGORY_SLUGS
+    ).order_by("name")
+
+    # Pagination: 9 per page
+    paginator = Paginator(papers, 9)
+    page_number = request.GET.get("page", 1)
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    # Keep active query parameters for pagination links
+    query_params = request.GET.copy()
+    if "page" in query_params:
+        del query_params["page"]
+    querystring = query_params.urlencode()
+
+    is_filtered = bool(
+        search_query
+        or selected_scheme
+        or selected_branch
+        or selected_semester
+        or selected_year
+        or selected_type
+    )
+
+    context = {
+        "page_obj": page_obj,
+        "question_papers": page_obj.object_list,
+        "total_count": paginator.count,
+        "schemes": schemes,
+        "branches": branches,
+        "semesters": semesters,
+        "years": available_years,
+        "paper_types": paper_types,
+        "search_query": search_query,
+        "selected_scheme": selected_scheme,
+        "selected_branch": selected_branch,
+        "selected_semester": selected_semester,
+        "selected_year": selected_year,
+        "selected_type": selected_type,
+        "is_filtered": is_filtered,
+        "querystring": querystring,
+    }
+    return render(request, "public/question_papers.html", context)
 
 
 def coming_soon(request, title="This page"):

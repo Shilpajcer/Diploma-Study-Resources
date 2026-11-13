@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Question Papers Library – {{ SITE_NAME }}{% endblock %}
+{% block meta_description %}Practise with verified previous-year and model question papers for Karnataka DTE diploma students across C-15, C-20, and C-25 schemes.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/pages.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- ===== HERO ===== -->
+<section class="page-hero">
+  <div class="container">
+    <span class="page-hero__eyebrow">
+      <i class="bi bi-file-earmark-text-fill" aria-hidden="true"></i> Karnataka DTE Examinations
+    </span>
+    <h1 class="page-hero__title">Question Papers Library</h1>
+    <p class="page-hero__lead">
+      Practise with verified previous-year and model question papers organized by scheme, branch, semester, and examination year.
+    </p>
+  </div>
+</section>
+
+<!-- ===== FILTER & SEARCH TOOLBAR ===== -->
+<section class="section py-4 bg-white border-bottom">
+  <div class="container">
+    <div class="qp-filter-card mb-0">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <h2 class="qp-filter-title mb-0">
+          <i class="bi bi-funnel text-teal" aria-hidden="true"></i> Search & Filter Question Papers
+        </h2>
+        {% if is_filtered %}
+          <a href="{% url 'question_papers' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i> Clear all filters
+          </a>
+        {% endif %}
+      </div>
+
+      <form method="get" action="{% url 'question_papers' %}" role="search" class="row g-3">
+        <!-- Search query input -->
+        <div class="col-12 col-lg-4">
+          <label for="qpSearch" class="form-label small fw-semibold text-muted mb-1">Search Question Papers</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white text-muted border-end-0">
+              <i class="bi bi-search" aria-hidden="true"></i>
+            </span>
+            <input
+              type="search"
+              id="qpSearch"
+              name="q"
+              class="form-control border-start-0 ps-0"
+              placeholder="Search by subject name, code, or keyword..."
+              value="{{ search_query }}"
+              autocomplete="off"
+            >
+          </div>
+        </div>
+
+        <!-- Scheme filter -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <label for="filterScheme" class="form-label small fw-semibold text-muted mb-1">Scheme</label>
+          <select id="filterScheme" name="scheme" class="form-select">
+            <option value="">All Schemes</option>
+            {% for s in schemes %}
+              <option value="{{ s.slug }}" {% if selected_scheme == s.slug %}selected{% endif %}>
+                {{ s.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Branch filter -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <label for="filterBranch" class="form-label small fw-semibold text-muted mb-1">Branch</label>
+          <select id="filterBranch" name="branch" class="form-select">
+            <option value="">All Branches</option>
+            {% for b in branches %}
+              <option value="{{ b.slug }}" {% if selected_branch == b.slug %}selected{% endif %}>
+                {{ b.short_name|default:b.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Semester filter -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <label for="filterSemester" class="form-label small fw-semibold text-muted mb-1">Semester</label>
+          <select id="filterSemester" name="semester" class="form-select">
+            <option value="">All Semesters</option>
+            {% for sem in semesters %}
+              <option value="{{ sem }}" {% if selected_semester == sem|stringformat:"s" %}selected{% endif %}>
+                Semester {{ sem }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Examination Year filter -->
+        <div class="col-6 col-md-3 col-lg-2">
+          <label for="filterYear" class="form-label small fw-semibold text-muted mb-1">Exam Year</label>
+          <select id="filterYear" name="year" class="form-select">
+            <option value="">All Years</option>
+            {% for y in years %}
+              <option value="{{ y }}" {% if selected_year == y|stringformat:"s" %}selected{% endif %}>
+                {{ y }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Submit & Clear buttons -->
+        <div class="col-12 d-flex align-items-center justify-content-between flex-wrap gap-2 pt-1">
+          <div class="small text-muted">
+            Found <strong>{{ total_count }}</strong> verified question paper{{ total_count|pluralize }}
+            {% if is_filtered %} matching your criteria{% endif %}
+          </div>
+          <div class="d-flex gap-2">
+            {% if is_filtered %}
+              <a href="{% url 'question_papers' %}" class="btn btn-dsh-outline btn-sm">
+                Clear
+              </a>
+            {% endif %}
+            <button type="submit" class="btn btn-dsh-primary btn-sm">
+              <i class="bi bi-funnel-fill me-1" aria-hidden="true"></i> Apply Filters
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===== RESULTS SECTION ===== -->
+<section class="section">
+  <div class="container">
+    {% if question_papers %}
+      <!-- Question Papers Grid -->
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for qp in question_papers %}
+        <div class="col">
+          <article class="qp-card" data-category="{{ qp.category.slug }}">
+            <!-- Top Badges -->
+            <div class="qp-card__top">
+              <span class="cat-badge">
+                <i class="bi bi-file-earmark-text" aria-hidden="true"></i> {{ qp.category.name }}
+              </span>
+              {% if qp.exam_year %}
+                <span class="qp-badge-year">
+                  <i class="bi bi-calendar3" aria-hidden="true"></i> {{ qp.exam_year }}{% if qp.exam_session %} · {{ qp.exam_session }}{% endif %}
+                </span>
+              {% endif %}
+            </div>
+
+            <!-- Subject Code & Title -->
+            <span class="qp-card__code">{{ qp.subject.code }}</span>
+            <h3 class="qp-card__title">{{ qp.subject.name }}</h3>
+            <p class="qp-card__subtitle">{{ qp.title }}</p>
+
+            <!-- Metadata Pills -->
+            <ul class="qp-card__meta">
+              <li>{{ qp.subject.semester.scheme_branch.scheme.name }}</li>
+              <li>{{ qp.subject.semester.scheme_branch.branch.short_name|default:qp.subject.semester.scheme_branch.branch.name }}</li>
+              <li>Semester {{ qp.subject.semester.number }}</li>
+              {% if qp.language %}
+                <li>{{ qp.language }}</li>
+              {% endif %}
+            </ul>
+
+            <!-- Foot Actions -->
+            <div class="qp-card__foot">
+              <span class="small text-muted">
+                <i class="bi bi-file-earmark-pdf text-danger me-1" aria-hidden="true"></i> Verified PDF
+              </span>
+              <div class="qp-card__actions">
+                <!-- Preview Modal Button -->
+                <button
+                  type="button"
+                  class="btn btn-sm btn-dsh-outline"
+                  data-bs-toggle="modal"
+                  data-bs-target="#qpModal{{ qp.id }}"
+                  title="Preview question paper inline"
+                >
+                  <i class="bi bi-eye me-1" aria-hidden="true"></i> View
+                </button>
+
+                <!-- Open in New Tab -->
+                <a
+                  href="{{ qp.file.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-sm btn-dsh-outline"
+                  title="Open PDF in new tab"
+                >
+                  <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                  <span class="visually-hidden">Open {{ qp.title }} in new tab</span>
+                </a>
+
+                <!-- Direct Download -->
+                <a
+                  href="{{ qp.file.url }}"
+                  download
+                  class="btn btn-sm btn-dsh-primary"
+                  title="Download PDF directly"
+                >
+                  <i class="bi bi-download me-1" aria-hidden="true"></i> Download
+                </a>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Inline PDF Preview Modal for this Question Paper -->
+        <div class="modal fade" id="qpModal{{ qp.id }}" tabindex="-1" aria-labelledby="qpModalLabel{{ qp.id }}" aria-hidden="true">
+          <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <div>
+                  <span class="badge bg-light text-dark border me-2">{{ qp.subject.code }}</span>
+                  <h5 class="modal-title d-inline fw-bold" id="qpModalLabel{{ qp.id }}">{{ qp.title }}</h5>
+                  <div class="small text-muted mt-1">
+                    {{ qp.subject.name }} · {{ qp.subject.semester.scheme_branch.scheme.name }} · Sem {{ qp.subject.semester.number }}
+                    {% if qp.exam_year %} · Exam: {{ qp.exam_year }}{% if qp.exam_session %} ({{ qp.exam_session }}){% endif %}{% endif %}
+                  </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body p-0" style="background: #525659;">
+                <iframe
+                  src="{{ qp.file.url }}"
+                  class="w-100"
+                  style="height: 75vh; min-height: 480px; border: 0;"
+                  title="Preview of {{ qp.title }}"
+                ></iframe>
+              </div>
+              <div class="modal-footer d-flex justify-content-between">
+                <span class="small text-muted">
+                  <i class="bi bi-shield-check text-success me-1"></i> Verified Karnataka DTE Material
+                </span>
+                <div class="d-flex gap-2">
+                  <a href="{{ qp.file.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-dsh-outline btn-sm">
+                    <i class="bi bi-box-arrow-up-right me-1"></i> Open in New Tab
+                  </a>
+                  <a href="{{ qp.file.url }}" download class="btn btn-dsh-primary btn-sm">
+                    <i class="bi bi-download me-1"></i> Download PDF
+                  </a>
+                  <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if page_obj.has_other_pages %}
+      <nav class="dsh-pagination" aria-label="Question papers pagination">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" aria-label="Previous">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i> Previous
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link" aria-hidden="true"><i class="bi bi-chevron-left"></i> Previous</span>
+            </li>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ num }}</span>
+              </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if querystring %}&{{ querystring }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}" aria-label="Next">
+                Next <i class="bi bi-chevron-right" aria-hidden="true"></i>
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link" aria-hidden="true">Next <i class="bi bi-chevron-right"></i></span>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+    {% else %}
+      <!-- Empty State -->
+      <div class="dsh-empty-state">
+        <div class="dsh-empty-state__icon" aria-hidden="true">
+          <i class="bi bi-file-earmark-x"></i>
+        </div>
+        <h2 class="dsh-empty-state__title">No Question Papers Found</h2>
+        <p class="dsh-empty-state__text">
+          {% if is_filtered %}
+            We couldn't find any verified question papers matching your selected filters. Try clearing your search keyword, selecting a different scheme/branch/semester, or resetting all filters.
+          {% else %}
+            No verified question papers have been uploaded yet. Please check back soon or browse other study materials.
+          {% endif %}
+        </p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+          {% if is_filtered %}
+            <a href="{% url 'question_papers' %}" class="btn btn-dsh-primary btn-sm">
+              <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i> Reset Filters
+            </a>
+          {% endif %}
+          <a href="{% url 'contact' %}" class="btn btn-dsh-outline btn-sm">
+            <i class="bi bi-envelope me-1" aria-hidden="true"></i> Request a Question Paper
+          </a>
+          <a href="{% url 'materials' %}" class="btn btn-dsh-outline btn-sm">
+            <i class="bi bi-book me-1" aria-hidden="true"></i> Browse Study Materials
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ===== CTA BAND ===== -->
+<section class="section section--white pt-0">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2>Have Question Papers to Share?</h2>
+        <p>Help other Karnataka diploma students prepare for exams. Send us past papers or model question papers and our team will verify and publish them.</p>
+      </div>
+      <a href="{% url 'contact' %}" class="btn btn-dsh-light">
+        Contribute Question Paper <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

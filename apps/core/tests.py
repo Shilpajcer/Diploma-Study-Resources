@@ -1,3 +1,4 @@
+import os
 import shutil
 import tempfile
 from unittest.mock import patch
@@ -8,7 +9,17 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import ContactSubmission, Scheme
+from .models import (
+    ContactSubmission,
+    Scheme,
+    Branch,
+    SchemeBranch,
+    Semester,
+    Subject,
+    ResourceCategory,
+    Resource,
+)
+from .admin import ResourceAdminForm
 
 
 class AboutPageTests(TestCase):
@@ -369,4 +380,267 @@ class ContactPageAndApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertFalse(response.json()["email_sent"])
         self.assertEqual(ContactSubmission.objects.count(), 1)
+
+
+class QuestionPapersPageTests(TestCase):
+    def setUp(self):
+        self.temp_media = tempfile.mkdtemp()
+        self.media_override = override_settings(MEDIA_ROOT=self.temp_media)
+        self.media_override.enable()
+
+        # Create valid test PDF file
+        materials_dir = os.path.join(self.temp_media, "study_materials")
+        os.makedirs(materials_dir, exist_ok=True)
+        self.pdf_content = b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n"
+
+        pdf_path_1 = os.path.join(materials_dir, "math_qp_2025.pdf")
+        with open(pdf_path_1, "wb") as f:
+            f.write(self.pdf_content)
+
+        pdf_path_2 = os.path.join(materials_dir, "cs_qp_2024.pdf")
+        with open(pdf_path_2, "wb") as f:
+            f.write(self.pdf_content)
+
+        # Structure
+        self.scheme_c20 = Scheme.objects.create(name="C-20", slug="c-20", is_active=True)
+        self.scheme_c15 = Scheme.objects.create(name="C-15", slug="c-15", is_active=True)
+
+        self.branch_cse = Branch.objects.create(
+            name="Computer Science & Engineering", short_name="CSE", slug="cse"
+        )
+        self.branch_mech = Branch.objects.create(
+            name="Mechanical Engineering", short_name="MECH", slug="mech"
+        )
+
+        sb_cse = SchemeBranch.objects.create(scheme=self.scheme_c20, branch=self.branch_cse)
+        sb_mech = SchemeBranch.objects.create(scheme=self.scheme_c20, branch=self.branch_mech)
+
+        self.sem1_cse = Semester.objects.create(scheme_branch=sb_cse, number=1)
+        self.sem2_cse = Semester.objects.create(scheme_branch=sb_cse, number=2)
+        self.sem1_mech = Semester.objects.create(scheme_branch=sb_mech, number=1)
+
+        self.sub_math = Subject.objects.create(
+            semester=self.sem1_cse, code="20SC11T", name="Engineering Mathematics"
+        )
+        self.sub_cs = Subject.objects.create(
+            semester=self.sem1_cse, code="20CS11T", name="Fundamentals of Computers"
+        )
+        self.sub_mech = Subject.objects.create(
+            semester=self.sem1_mech, code="20ME11T", name="Engineering Mechanics"
+        )
+
+        # Categories
+        self.cat_prev = ResourceCategory.objects.create(
+            name="Previous Question Papers", slug="previous-question-papers"
+        )
+        self.cat_model = ResourceCategory.objects.create(
+            name="Model Question Papers", slug="model-question-papers"
+        )
+        self.cat_notes = ResourceCategory.objects.create(
+            name="Notes", slug="notes"
+        )
+
+        # Verified Question Papers with valid files
+        self.qp1 = Resource.objects.create(
+            title="Engineering Mathematics – Nov 2025 QP",
+            subject=self.sub_math,
+            category=self.cat_prev,
+            file="study_materials/math_qp_2025.pdf",
+            status="verified",
+            is_active=True,
+            exam_year=2025,
+            exam_session="Nov/Dec",
+        )
+
+        self.qp2 = Resource.objects.create(
+            title="Fundamentals of Computers – Model Paper 2024",
+            subject=self.sub_cs,
+            category=self.cat_model,
+            file="study_materials/cs_qp_2024.pdf",
+            status="verified",
+            is_active=True,
+            exam_year=2024,
+            exam_session="Model Paper",
+        )
+
+        # Unverified QP (must be excluded)
+        self.qp_pending = Resource.objects.create(
+            title="Pending Mathematics Paper",
+            subject=self.sub_math,
+            category=self.cat_prev,
+            file="study_materials/math_qp_2025.pdf",
+            status="pending",
+            is_active=True,
+            exam_year=2023,
+        )
+
+        # Notes resource (must be excluded)
+        self.notes_resource = Resource.objects.create(
+            title="Engineering Mathematics Notes",
+            subject=self.sub_math,
+            category=self.cat_notes,
+            file="study_materials/math_qp_2025.pdf",
+            status="verified",
+            is_active=True,
+        )
+
+        # QP with missing physical file (must be excluded)
+        self.qp_missing_file = Resource.objects.create(
+            title="Ghost Question Paper",
+            subject=self.sub_math,
+            category=self.cat_prev,
+            file="study_materials/non_existent.pdf",
+            status="verified",
+            is_active=True,
+            exam_year=2021,
+        )
+
+    def tearDown(self):
+        self.media_override.disable()
+        shutil.rmtree(self.temp_media, ignore_errors=True)
+
+    def test_question_papers_page_renders_successfully(self):
+        response = self.client.get(reverse("question_papers"))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode("utf-8")
+
+        self.assertNotIn("is on the way", html)
+        self.assertIn("Question Papers Library", html)
+        self.assertIn("Karnataka DTE Examinations", html)
+        self.assertIn("20SC11T", html)
+        self.assertIn("Engineering Mathematics", html)
+        self.assertIn("20CS11T", html)
+        self.assertIn("Fundamentals of Computers", html)
+        self.assertIn("2025", html)
+        self.assertIn("2024", html)
+        self.assertIn("Download", html)
+        self.assertIn("View", html)
+
+    def test_only_verified_valid_pdf_files_shown(self):
+        response = self.client.get(reverse("question_papers"))
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode("utf-8")
+
+        self.assertIn("Engineering Mathematics – Nov 2025 QP", html)
+        self.assertIn("Fundamentals of Computers – Model Paper 2024", html)
+        # Excluded items
+        self.assertNotIn("Pending Mathematics Paper", html)
+        self.assertNotIn("Engineering Mathematics Notes", html)
+        self.assertNotIn("Ghost Question Paper", html)
+
+    def test_search_by_subject_code_and_name(self):
+        # Search by code
+        res_code = self.client.get(reverse("question_papers") + "?q=20SC11T")
+        self.assertEqual(res_code.status_code, 200)
+        self.assertContains(res_code, "Engineering Mathematics – Nov 2025 QP")
+        self.assertNotContains(res_code, "Fundamentals of Computers – Model Paper 2024")
+
+        # Search by name
+        res_name = self.client.get(reverse("question_papers") + "?q=Computers")
+        self.assertEqual(res_name.status_code, 200)
+        self.assertContains(res_name, "Fundamentals of Computers – Model Paper 2024")
+        self.assertNotContains(res_name, "Engineering Mathematics – Nov 2025 QP")
+
+    def test_filter_by_scheme_branch_and_semester(self):
+        res_scheme = self.client.get(reverse("question_papers") + "?scheme=c-20")
+        self.assertEqual(res_scheme.status_code, 200)
+        self.assertContains(res_scheme, "20SC11T")
+
+        res_wrong_scheme = self.client.get(reverse("question_papers") + "?scheme=c-15")
+        self.assertEqual(res_wrong_scheme.status_code, 200)
+        self.assertContains(res_wrong_scheme, "No Question Papers Found")
+
+        res_branch = self.client.get(reverse("question_papers") + "?branch=cse")
+        self.assertEqual(res_branch.status_code, 200)
+        self.assertContains(res_branch, "20SC11T")
+
+        res_sem = self.client.get(reverse("question_papers") + "?semester=1")
+        self.assertEqual(res_sem.status_code, 200)
+        self.assertContains(res_sem, "20SC11T")
+
+        res_empty_sem = self.client.get(reverse("question_papers") + "?semester=5")
+        self.assertEqual(res_empty_sem.status_code, 200)
+        self.assertContains(res_empty_sem, "No Question Papers Found")
+
+    def test_filter_by_examination_year(self):
+        res_2025 = self.client.get(reverse("question_papers") + "?year=2025")
+        self.assertEqual(res_2025.status_code, 200)
+        self.assertContains(res_2025, "Engineering Mathematics – Nov 2025 QP")
+        self.assertNotContains(res_2025, "Fundamentals of Computers – Model Paper 2024")
+
+        res_2024 = self.client.get(reverse("question_papers") + "?year=2024")
+        self.assertEqual(res_2024.status_code, 200)
+        self.assertContains(res_2024, "Fundamentals of Computers – Model Paper 2024")
+        self.assertNotContains(res_2024, "Engineering Mathematics – Nov 2025 QP")
+
+    def test_empty_state_with_reset_button(self):
+        response = self.client.get(reverse("question_papers") + "?q=NoSuchSubjectExists")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "No Question Papers Found")
+        self.assertContains(response, "Reset Filters")
+        self.assertContains(response, reverse("question_papers"))
+
+    def test_pagination_and_query_preservation(self):
+        # Create 10 more question papers to test pagination (> 9 items)
+        materials_dir = os.path.join(self.temp_media, "study_materials")
+        for i in range(10):
+            pdf_name = f"page_test_{i}.pdf"
+            with open(os.path.join(materials_dir, pdf_name), "wb") as f:
+                f.write(self.pdf_content)
+            Resource.objects.create(
+                title=f"Extra Paper {i}",
+                subject=self.sub_math,
+                category=self.cat_prev,
+                file=f"study_materials/{pdf_name}",
+                status="verified",
+                is_active=True,
+                exam_year=2025,
+            )
+
+        # Page 1
+        res_p1 = self.client.get(reverse("question_papers") + "?scheme=c-20")
+        self.assertEqual(res_p1.status_code, 200)
+        self.assertTrue(res_p1.context["page_obj"].has_other_pages())
+        self.assertEqual(len(res_p1.context["question_papers"]), 9)
+        self.assertContains(res_p1, "page=2")
+        self.assertContains(res_p1, "scheme=c-20")
+
+        # Page 2
+        res_p2 = self.client.get(reverse("question_papers") + "?page=2&scheme=c-20")
+        self.assertEqual(res_p2.status_code, 200)
+        self.assertEqual(res_p2.context["page_obj"].number, 2)
+
+    def test_resource_admin_form_secure_pdf_validation(self):
+        # Disallow non-pdf extension
+        bad_ext_file = SimpleUploadedFile(
+            "script.exe", b"%PDF-1.4\nfake", content_type="application/octet-stream"
+        )
+        form_bad_ext = ResourceAdminForm(
+            data={"title": "Test", "subject": self.sub_math.id, "category": self.cat_prev.id, "status": "verified", "language": "English"},
+            files={"file": bad_ext_file},
+        )
+        self.assertFalse(form_bad_ext.is_valid())
+        self.assertIn("file", form_bad_ext.errors)
+
+        # Disallow fake PDF with wrong header
+        fake_header_file = SimpleUploadedFile(
+            "document.pdf", b"<html>malicious</html>", content_type="application/pdf"
+        )
+        form_fake = ResourceAdminForm(
+            data={"title": "Test", "subject": self.sub_math.id, "category": self.cat_prev.id, "status": "verified", "language": "English"},
+            files={"file": fake_header_file},
+        )
+        self.assertFalse(form_fake.is_valid())
+        self.assertIn("file", form_fake.errors)
+
+        # Allow valid PDF
+        good_pdf = SimpleUploadedFile(
+            "legit.pdf", self.pdf_content, content_type="application/pdf"
+        )
+        form_good = ResourceAdminForm(
+            data={"title": "Test", "subject": self.sub_math.id, "category": self.cat_prev.id, "status": "verified", "language": "English"},
+            files={"file": good_pdf},
+        )
+        self.assertTrue(form_good.is_valid(), form_good.errors)
+
 

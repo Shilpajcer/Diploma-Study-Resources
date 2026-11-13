@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from .models import (
     Scheme,
@@ -10,6 +11,40 @@ from .models import (
     Resource,
     ContactSubmission,
 )
+
+
+class ResourceAdminForm(forms.ModelForm):
+    """Secure validation for study material and question paper file uploads."""
+
+    class Meta:
+        model = Resource
+        fields = "__all__"
+
+    def clean_file(self):
+        uploaded = self.cleaned_data.get("file")
+        if uploaded and hasattr(uploaded, "file"):
+            name = (uploaded.name or "").lower()
+            if not name.endswith(".pdf"):
+                raise forms.ValidationError(
+                    "Only PDF documents (.pdf) are allowed for study materials and question papers."
+                )
+            if uploaded.size <= 0:
+                raise forms.ValidationError("The uploaded file is empty.")
+            if uploaded.size > 25 * 1024 * 1024:
+                raise forms.ValidationError(
+                    "File size exceeds the 25 MB maximum limit."
+                )
+            pos = uploaded.tell() if hasattr(uploaded, "tell") else 0
+            try:
+                uploaded.seek(0)
+                header = uploaded.read(1024)
+            finally:
+                uploaded.seek(pos)
+            if not header.startswith(b"%PDF-"):
+                raise forms.ValidationError(
+                    "Invalid file content: the file does not match a valid PDF document header."
+                )
+        return uploaded
 
 
 @admin.register(Scheme)
@@ -56,21 +91,29 @@ class ResourceCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
+    form = ResourceAdminForm
     list_display = (
         "title",
         "subject",
-        "unit",
         "category",
+        "exam_year",
+        "exam_session",
         "status",
         "is_active",
     )
 
-    search_fields = ("title", "subject__name", "subject__code")
+    search_fields = (
+        "title",
+        "subject__name",
+        "subject__code",
+        "exam_year",
+        "exam_session",
+    )
 
     list_filter = (
         "status",
         "category",
-        "unit",
+        "exam_year",
         "language",
         "is_active",
     )

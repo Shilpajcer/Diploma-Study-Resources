@@ -6,13 +6,9 @@ urlpatterns = [
     path("", views.home, name="home"),
 
     # TEMPORARY routes. Each one is replaced by a real view in its phase.
-    path("materials/", views.materials, name="materials"),    
-            path(
-    "subject/<int:subject_id>/",
-    views.subject_detail,
-    name="subject_detail",
-),        # Phase 3
-    path("question-papers/", views.coming_soon, {"title": "Question Papers"}, name="question_papers"),  # Phase 8
+    path("materials/", views.materials, name="materials"),
+    path("subject/<int:subject_id>/", views.subject_detail, name="subject_detail"),
+    path("question-papers/", views.question_papers, name="question_papers"),
     path("syllabus/", views.coming_soon, {"title": "Syllabus"}, name="syllabus"),                       # Phase 3
     path("dte-updates/", views.coming_soon, {"title": "DTE Updates"}, name="dte_updates"),              # Phase 8
     path("exam-prep/", views.coming_soon, {"title": "Examination Preparation"}, name="exam_prep"),      # Phase 8

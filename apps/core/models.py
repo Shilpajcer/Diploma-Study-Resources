@@ -154,11 +154,22 @@ class Resource(models.Model):
     )
     file_url = models.URLField(blank=True)
     file = models.FileField(
-    upload_to="study_materials/",
-    blank=True,
-    null=True
-)
+        upload_to="study_materials/",
+        blank=True,
+        null=True
+    )
     source_url = models.URLField(blank=True)
+    exam_year = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        db_index=True,
+        help_text="Examination year, e.g. 2020, 2024, 2025",
+    )
+    exam_session = models.CharField(
+        max_length=40,
+        blank=True,
+        help_text="Examination session or month, e.g. 'Nov/Dec', 'Jun/Jul', 'Model Paper'",
+    )
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="pending"
     )
